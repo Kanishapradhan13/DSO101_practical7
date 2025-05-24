@@ -1,61 +1,7 @@
 @Library('shared-library') _
 
-pipeline {
-    agent any
-    
-    stages {
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
-        
-        stage('Install Dependencies') {
-            steps {
-                script {
-                    nodeInstall(
-                        nodeVersion: '18',
-                        installCommand: 'npm ci'
-                    )
-                }
-            }
-        }
-        
-        stage('Run Tests') {
-            steps {
-                nodeTest(
-                    nodeVersion: '18',
-                    testCommand: 'npm test'
-                )
-            }
-        }
-        
-        stage('Build Docker Image') {
-            steps {
-                dockerBuild(
-                    imageName: 'yourusername/example-app',
-                    tag: "${env.BUILD_NUMBER}"
-                )
-            }
-        }
-        
-        stage('Push to Registry') {
-            steps {
-                dockerPush(
-                    imageName: 'yourusername/example-app',
-                    tag: "${env.BUILD_NUMBER}",
-                    credentials: 'dockerhub-credentials'
-                )
-            }
-        }
-    }
-    
-    post {
-        always {
-            cleanWorkspace()
-        }
-        failure {
-            echo "Pipeline failed!"
-        }
-    }
-}
+nodePipeline(
+    appDir: 'example-app',
+    nodeVersion: '18',
+    imageName: 'kanishapradhan/example-app'
+)

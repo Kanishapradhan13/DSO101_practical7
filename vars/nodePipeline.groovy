@@ -1,17 +1,10 @@
+#!/usr/bin/env groovy
+
 def call(Map config = [:]) {
-    // Default configuration
-    def nodeVersion = config.nodeVersion ?: '18'
-    def dockerRegistry = config.dockerRegistry ?: 'docker.io'
-    def dockerCredentialsId = config.dockerCredentialsId ?: 'dockerhub-credentials'
-    def appName = config.appName ?: 'jenkins-example-app'
+    def appDir = config.appDir ?: '.'
     
     pipeline {
         agent any
-        
-        environment {
-            DOCKER_IMAGE = "${dockerRegistry}/${appName}"
-            DOCKER_TAG = "${env.BUILD_NUMBER}"
-        }
         
         stages {
             stage('Checkout') {
@@ -22,9 +15,12 @@ def call(Map config = [:]) {
             
             stage('Install Dependencies') {
                 steps {
-                    dir('example-app') {
+                    dir(appDir) {
                         script {
-                            nodeInstall(nodeVersion)
+                            nodeInstall(
+                                nodeVersion: config.nodeVersion ?: '18',
+                                installCommand: config.installCommand ?: 'npm install'
+                            )
                         }
                     }
                 }
@@ -32,28 +28,35 @@ def call(Map config = [:]) {
             
             stage('Run Tests') {
                 steps {
-                    dir('example-app') {
-                        script {
-                            nodeTest()
-                        }
+                    dir(appDir) {
+                        nodeTest(
+                            nodeVersion: config.nodeVersion ?: '18',
+                            testCommand: config.testCommand ?: 'npm test'
+                        )
                     }
                 }
             }
             
             stage('Build Docker Image') {
                 steps {
-                    dir('example-app') {
-                        script {
-                            dockerBuild(appName, env.DOCKER_TAG)
-                        }
+                    dir(appDir) {
+                        dockerBuild(
+                            imageName: config.imageName,
+                            tag: config.tag ?: "${env.BUILD_NUMBER}",
+                            dockerfilePath: config.dockerfilePath ?: 'Dockerfile'
+                        )
                     }
                 }
             }
             
             stage('Push to Registry') {
                 steps {
-                    script {
-                        dockerPush(dockerRegistry, appName, env.DOCKER_TAG, dockerCredentialsId)
+                    dir(appDir) {
+                        dockerPush(
+                            imageName: config.imageName,
+                            tag: config.tag ?: "${env.BUILD_NUMBER}",
+                            credentials: config.credentials ?: 'dockerhub-credentials'
+                        )
                     }
                 }
             }
@@ -62,9 +65,6 @@ def call(Map config = [:]) {
         post {
             always {
                 cleanWs()
-            }
-            success {
-                echo "Pipeline completed successfully!"
             }
             failure {
                 echo "Pipeline failed!"
