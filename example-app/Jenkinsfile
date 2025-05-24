@@ -1,0 +1,9 @@
+@Library('node-shared-library') _
+
+// Use the shared library pipeline with custom configuration
+nodePipeline(
+    nodeVersion: '18',
+    appName: 'kanishapradhan/jenkins-example-app',
+    dockerRegistry: 'docker.io',  // Change to your registry
+    dockerCredentialsId: 'dockerhub-credentials'  // Update with your credentials ID
+)

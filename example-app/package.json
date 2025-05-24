@@ -1,0 +1,29 @@
+{
+    "name": "jenkins-shared-library-example",
+    "version": "1.0.0",
+    "description": "Example Node.js app to demonstrate Jenkins shared library",
+    "main": "index.js",
+    "scripts": {
+      "start": "node index.js",
+      "test": "jest --passWithNoTests",
+      "test:unit": "jest --testPathPattern=unit",
+      "test:integration": "jest --testPathPattern=integration",
+      "lint": "eslint .",
+      "build": "echo 'Building application...' && npm run lint"
+    },
+    "keywords": ["jenkins", "shared-library", "example"],
+    "author": "Your Name",
+    "license": "MIT",
+    "dependencies": {
+      "express": "^4.18.2",
+      "dotenv": "^16.3.1"
+    },
+    "devDependencies": {
+      "jest": "^29.7.0",
+      "eslint": "^8.50.0",
+      "supertest": "^6.3.3"
+    },
+    "engines": {
+      "node": ">=18.0.0"
+    }
+  }
