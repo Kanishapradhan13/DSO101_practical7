@@ -1,4 +1,4 @@
-@Library('node-shared-library') _
+@Library('shared-library') _
 
 // Use the shared library pipeline with custom configuration
 nodePipeline(
