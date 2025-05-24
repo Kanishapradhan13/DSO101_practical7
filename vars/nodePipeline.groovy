@@ -1,5 +1,3 @@
-#!/usr/bin/env groovy
-
 def call(Map config = [:]) {
     def appDir = config.appDir ?: '.'
     
@@ -15,23 +13,23 @@ def call(Map config = [:]) {
             
             stage('Install Dependencies') {
                 steps {
-                    dir(appDir) {
-                        script {
-                            nodeInstall(
-                                nodeVersion: config.nodeVersion ?: '18',
-                                installCommand: config.installCommand ?: 'npm install'
-                            )
-                        }
+                    script {
+                        nodeInstall(
+                            nodeVersion: config.nodeVersion ?: '18',
+                            installCommand: config.installCommand ?: 'npm install',
+                            appDir: appDir
+                        )
                     }
                 }
             }
             
             stage('Run Tests') {
                 steps {
-                    dir(appDir) {
+                    script {
                         nodeTest(
                             nodeVersion: config.nodeVersion ?: '18',
-                            testCommand: config.testCommand ?: 'npm test'
+                            testCommand: config.testCommand ?: 'npm test',
+                            appDir: appDir
                         )
                     }
                 }
@@ -39,11 +37,12 @@ def call(Map config = [:]) {
             
             stage('Build Docker Image') {
                 steps {
-                    dir(appDir) {
+                    script {
                         dockerBuild(
                             imageName: config.imageName,
                             tag: config.tag ?: "${env.BUILD_NUMBER}",
-                            dockerfilePath: config.dockerfilePath ?: 'Dockerfile'
+                            dockerfilePath: config.dockerfilePath ?: 'Dockerfile',
+                            appDir: appDir
                         )
                     }
                 }
@@ -51,11 +50,11 @@ def call(Map config = [:]) {
             
             stage('Push to Registry') {
                 steps {
-                    dir(appDir) {
+                    script {
                         dockerPush(
                             imageName: config.imageName,
                             tag: config.tag ?: "${env.BUILD_NUMBER}",
-                            credentials: config.credentials ?: 'dockerhub-credentials'
+                            credentials: config.credentials ?: 'dockerhub'
                         )
                     }
                 }
