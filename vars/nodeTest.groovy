@@ -7,7 +7,7 @@ def call(String nodeVersion = '18') {
                 -v \${PWD}:/app \
                 -w /app \
                 node:${nodeVersion}-alpine \
-                npm test
+                sh -c "npm ci && npm test"
         """
         echo "All tests passed!"
     } catch (Exception e) {
