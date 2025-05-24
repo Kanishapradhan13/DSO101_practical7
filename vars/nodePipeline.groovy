@@ -54,7 +54,7 @@ def call(Map config = [:]) {
                         dockerPush(
                             imageName: config.imageName,
                             tag: config.tag ?: "${env.BUILD_NUMBER}",
-                            credentials: config.credentials ?: 'dockerhub'
+                            credentials: config.credentials ?: 'dockerhub-credentials'
                         )
                     }
                 }
