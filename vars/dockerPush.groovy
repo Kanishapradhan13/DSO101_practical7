@@ -1,19 +1,14 @@
-def call(String registry, String imageName, String tag, String credentialsId) {
-    echo "Pushing Docker image to ${registry}..."
+#!/usr/bin/env groovy
+
+def call(Map config = [:]) {
+    def imageName = config.imageName
+    def tag = config.tag ?: 'latest'
+    def credentials = config.credentials ?: 'dockerhub'
     
-    // Handle different registry URLs
-    def registryUrl = registry
-    if (registry == 'docker.io') {
-        registryUrl = 'https://index.docker.io/v1/'
-    } else if (!registry.startsWith('http')) {
-        registryUrl = "https://${registry}"
+    echo "Pushing Docker image ${imageName}:${tag} to registry..."
+    
+    withCredentials([usernamePassword(credentialsId: credentials, passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
+        sh "echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin"
+        sh "docker push ${imageName}:${tag}"
     }
-    
-    docker.withRegistry(registryUrl, credentialsId) {
-        def image = docker.image("${imageName}:${tag}")
-        image.push(tag)
-        image.push('latest')
-    }
-    
-    echo "Docker image pushed successfully!"
 }

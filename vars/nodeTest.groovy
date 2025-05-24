@@ -1,16 +1,9 @@
-def call(String nodeVersion = '18') {
-    echo "Running tests..."
+#!/usr/bin/env groovy
+
+def call(Map config = [:]) {
+    def nodeVersion = config.nodeVersion ?: '18'
+    def testCommand = config.testCommand ?: 'npm test'
     
-    try {
-        sh """
-            docker run --rm \
-                -v \${PWD}:/app \
-                -w /app \
-                node:${nodeVersion}-alpine \
-                sh -c "npm ci && npm test"
-        """
-        echo "All tests passed!"
-    } catch (Exception e) {
-        error "Tests failed: ${e.message}"
-    }
+    echo "Running tests with Node.js version ${nodeVersion}..."
+    sh "docker run --rm -v ${env.WORKSPACE}:/app -w /app node:${nodeVersion}-alpine ${testCommand}"
 }
