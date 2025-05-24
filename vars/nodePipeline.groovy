@@ -2,8 +2,8 @@ def call(Map config = [:]) {
     // Default configuration
     def nodeVersion = config.nodeVersion ?: '18'
     def dockerRegistry = config.dockerRegistry ?: 'docker.io'
-    def dockerCredentialsId = config.dockerCredentialsId ?: 'docker-hub-credentials'
-    def appName = config.appName ?: 'node-app'
+    def dockerCredentialsId = config.dockerCredentialsId ?: 'dockerhub-credentials'
+    def appName = config.appName ?: 'jenkins-example-app'
     
     pipeline {
         agent any
@@ -22,24 +22,30 @@ def call(Map config = [:]) {
             
             stage('Install Dependencies') {
                 steps {
-                    script {
-                        nodeInstall(nodeVersion)
+                    dir('example-app') {
+                        script {
+                            nodeInstall(nodeVersion)
+                        }
                     }
                 }
             }
             
             stage('Run Tests') {
                 steps {
-                    script {
-                        nodeTest()
+                    dir('example-app') {
+                        script {
+                            nodeTest()
+                        }
                     }
                 }
             }
             
             stage('Build Docker Image') {
                 steps {
-                    script {
-                        dockerBuild(appName, env.DOCKER_TAG)
+                    dir('example-app') {
+                        script {
+                            dockerBuild(appName, env.DOCKER_TAG)
+                        }
                     }
                 }
             }

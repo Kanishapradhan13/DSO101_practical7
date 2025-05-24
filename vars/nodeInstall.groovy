@@ -6,11 +6,18 @@ def call(Map config = [:]) {
     
     echo "Installing Node.js version ${nodeVersion} dependencies..."
     
-    // First check if package-lock.json exists before using npm ci
+    // Check if package.json exists first
+    def packageJsonExists = sh(script: "test -f package.json && echo 'true' || echo 'false'", returnStdout: true).trim()
+    
+    if (packageJsonExists == 'false') {
+        error "package.json not found in the workspace. Please make sure the repository contains a valid Node.js project."
+    }
+    
+    // Check if package-lock.json exists
     def packageLockExists = sh(script: "test -f package-lock.json && echo 'true' || echo 'false'", returnStdout: true).trim()
     
     if (packageLockExists == 'true' && installCommand == 'npm ci') {
-        sh "docker run --rm -v ${env.WORKSPACE}:/app -w /app node:${nodeVersion}-alpine ${installCommand} --omit=dev"
+        sh "docker run --rm -v ${env.WORKSPACE}:/app -w /app node:${nodeVersion}-alpine ${installCommand}"
     } else {
         // Fallback to npm install if no package-lock.json exists
         sh "docker run --rm -v ${env.WORKSPACE}:/app -w /app node:${nodeVersion}-alpine npm install"
